@@ -6,15 +6,15 @@
 <template>
     <div class="two-column-slash" :style="customStyle">
         <!-- wwManager:start -->
-        <wwSectionEditMenu v-bind:sectionCtrl="sectionCtrl"></wwSectionEditMenu>
+        <wwSectionEditMenu v-bind:sectionCtrl="sectionCtrl" :options="openOptions"></wwSectionEditMenu>
         <!-- wwManager:end -->
 
         <!-- This is the background of the section -->
         <wwObject class="background" v-bind:ww-object="section.data.background" ww-category="background"></wwObject>
 
-        <div class="content">
+        <div class="content2">
             <!-- left column -->
-            <div class="left-column">
+            <div class="left2-column">
                 <wwLayoutColumn tag="div" ww-default="ww-text" :ww-list="section.data.leftColumn" class="list" @ww-add="add(section.data.leftColumn, $event)" @ww-remove="remove(section.data.leftColumn, $event)">
                     <wwObject tag="div" v-for="object in section.data.leftColumn" :key="object.uniqueId" :ww-object="object"></wwObject>
                 </wwLayoutColumn>
@@ -27,7 +27,7 @@
             </div>
 
             <!-- right column -->
-            <div class="right-column">
+            <div class="right2-column">
                 <wwLayoutColumn tag="div" ww-default="ww-text" :ww-list="section.data.rightColumn" class="list" @ww-add="add(section.data.rightColumn, $event)" @ww-remove="remove(section.data.rightColumn, $event)">
                     <wwObject tag="div" v-for="object in section.data.rightColumn" :key="object.uniqueId" :ww-object="object"></wwObject>
                 </wwLayoutColumn>
@@ -39,7 +39,83 @@
 <!-- This is your Javascript -->
 <!-- ✨ Here comes the magic ✨ -->
 <script>
+/* wwManager:start */
 import ResizeObserver from 'resize-observer-polyfill';
+wwLib.wwPopups.addStory('TWO_COLUMN_SLASH_CONFIG', {
+    title: {
+        en: 'Section config',
+        fr: 'Configuration de la section'
+    },
+    type: 'wwPopupForm',
+    storyData: {
+        fields: [
+            {
+                label: {
+                    en: 'Slash width (in px):',
+                    fr: 'Largeur de l\'oblique (en px) :'
+                },
+                type: 'text',
+                key: 'slashWidth',
+                valueData: 'slashWidth'
+            },
+            {
+                label: {
+                    en: 'Slash screen starting point (in %):',
+                    fr: 'Position de départ de l\'oblique (en %) :'
+                },
+                type: 'text',
+                key: 'slashPosition',
+                valueData: 'slashPosition',
+            },
+            {
+                label: {
+                    en: 'Slash left color:',
+                    fr: 'couleur gauche de l\'oblique :'
+                },
+                type: 'color',
+                key: 'slashLeftcolor',
+                valueData: 'slashLeftcolor',
+            },
+            {
+                label: {
+                    en: 'Slash right color:',
+                    fr: 'couleur droite de l\'oblique :'
+                },
+                type: 'color',
+                key: 'slashRightColor',
+                valueData: 'slashRightColor',
+            },
+            {
+                label: {
+                    en: 'First column width (in %):',
+                    fr: 'Largeur de la première colonne (en %) :'
+                },
+                type: 'text',
+                key: 'leftColumnWidth',
+                valueData: 'leftColumnWidth'
+            },
+            {
+                label: {
+                    en: 'Second column width (in %):',
+                    fr: 'Largeur de la deuxième colonne (en %) :'
+                },
+                type: 'text',
+                key: 'rightColumnWidth',
+                valueData: 'rightColumnWidth'
+            }
+        ]
+    },
+    buttons: {
+        NEXT: {
+            text: {
+                en: 'Ok',
+                fr: 'Ok'
+            },
+            next: false
+        }
+    }
+})
+/* wwManager:end */
 export default {
     name: "__COMPONENT_NAME__",
     props: {
@@ -47,7 +123,13 @@ export default {
     },
     data() {
         return {
-            sectionHeight: 0
+            sectionHeight: 0,
+            slashWidth: '50',
+            slashLeftcolor: '#000000',
+            slashRightColor: '#ffffff',
+            slashPosition: '50',
+            leftColumnWidth: '50',
+            rightColumnWidth: '50'
         }
     },
     computed: {
@@ -55,10 +137,14 @@ export default {
             return this.sectionCtrl.get();
         },
         customStyle() {
-            const shadowColorAfter = this.section.data.animAtHover ? this.section.data.shadowColorAfter : this.section.data.shadowColor;
-            const pixelsToScrollTop = `-${this.section.data.animAtHover ? this.section.data.pixelsToScrollTop : '0'}px`;
             return {
                 '--sectionHeight': `${this.sectionHeight}px`,
+                '--slashWidth': `${this.slashWidth}px`,
+                '--slashLeftcolor': this.slashLeftcolor,
+                '--slashRightColor': this.slashRightColor,
+                '--slashPosition': `${this.slashPosition}%`,
+                '--leftColumnWidth': `${this.leftColumnWidth}%`,
+                '--rightColumnWidth': `${this.rightColumnWidth}%`
             }
         }
 
@@ -67,7 +153,8 @@ export default {
         this.init()
     },
     mounted() {
-        this.sectionHeight = this.$refs.slashContainer.clientHeight;
+        this.updateVars()
+        /* wwManager:start */
         const myObserver = new ResizeObserver(entries => {
             for (let entry of entries) {
                 this.updateVars()
@@ -75,6 +162,7 @@ export default {
 
         });
         myObserver.observe(this.$refs.slashContainer);
+        /* wwManager:end */
     },
     methods: {
         init() {
@@ -114,6 +202,13 @@ export default {
                 needUpdate = true;
             }
 
+            this.slashWidth = this.section.data.slashWidth || this.slashWidth
+            this.slashLeftcolor = this.section.data.slashLeftcolor || this.slashLeftcolor
+            this.slashRightColor = this.section.data.slashRightColor || this.slashRightColor
+            this.slashPosition = this.section.data.slashPosition || this.slashPosition
+            this.leftColumnWidth = this.section.data.leftColumnWidth || this.leftColumnWidth
+            this.rightColumnWidth = this.section.data.rightColumnWidth || this.rightColumnWidth
+
 
             if (needUpdate) {
                 this.sectionCtrl.update(this.section);
@@ -142,6 +237,62 @@ export default {
             } catch (error) {
                 wwLib.wwLog.error('ERROR : ', error);
             }
+        },
+        async openOptions() {
+            try {
+                let options = {
+                    firstPage: 'TWO_COLUMN_SLASH_CONFIG',
+                    data: {
+                        slashWidth: this.slashWidth,
+                        slashLeftcolor: this.slashLeftcolor,
+                        slashRightColor: this.slashRightColor,
+                        slashPosition: this.slashPosition,
+                        leftColumnWidth: this.leftColumnWidth,
+                        rightColumnWidth: this.rightColumnWidth
+                    },
+                }
+                const result = await wwLib.wwPopups.open(options)
+                let needUpdate = false
+                console.log(result)
+                if (typeof (result) == 'undefined') return;
+                if (typeof (result.slashWidth) != 'undefined') {
+                    this.section.data.slashWidth = result.slashWidth
+                    this.slashWidth = result.slashWidth
+                    needUpdate = true;
+                }
+                if (typeof (result.slashLeftcolor) != 'undefined') {
+                    this.section.data.slashLeftcolor = result.slashLeftcolor
+                    this.slashLeftcolor = result.slashLeftcolor
+                    needUpdate = true;
+                }
+                if (typeof (result.slashRightColor) != 'undefined') {
+                    this.section.data.slashRightColor = result.slashRightColor
+                    this.slashRightColor = result.slashRightColor
+                    needUpdate = true;
+                }
+                if (typeof (result.slashPosition) != 'undefined') {
+                    this.section.data.slashPosition = result.slashPosition
+                    this.slashPosition = result.slashPosition
+                    needUpdate = true;
+                }
+                if (typeof (result.leftColumnWidth) != 'undefined') {
+                    this.section.data.leftColumnWidth = result.leftColumnWidth
+                    this.leftColumnWidth = result.leftColumnWidth
+                    needUpdate = true;
+                }
+                if (typeof (result.rightColumnWidth) != 'undefined') {
+                    this.section.data.rightColumnWidth = result.rightColumnWidth
+                    this.rightColumnWidth = result.rightColumnWidth
+                    needUpdate = true;
+                }
+                if (needUpdate) {
+                    this.sectionCtrl.update(this.section);
+                    this.$forceUpdate();
+                }
+
+            } catch (error) {
+                wwLib.wwLog.error('ERROR : ', error);
+            }
         }
         /* wwManager:end */
     }
@@ -152,32 +303,41 @@ export default {
 <!-- This is your CSS -->
 <style lang="scss" scoped>
 .two-column-slash {
-    .content {
+    .content2 {
         position: relative;
         height: 100%;
         width: 100%;
-        display: flex;
-        .left-column {
-            flex-basis: 50%;
+        .left2-column {
+            width: 100%;
+            @media (min-width: 992px) {
+                width: var(--rightColumnWidth);
+            }
         }
-        .right-column {
-            flex-basis: 50%;
+        .right2-column {
+            width: 100%;
+            @media (min-width: 992px) {
+                width: var(--rightColumnWidth);
+            }
         }
         .slash-container {
+            display: none;
             position: absolute;
             height: 100%;
-            left: 50%;
-            transform: translateX(-50%);
+            left: var(--slashPosition);
+            z-index: 2;
+            @media (min-width: 992px) {
+                display: block;
+            }
             .left {
                 position: absolute;
                 top: 0;
                 right: 0;
                 width: 0;
                 height: 0;
-                transform: translateX(50%);
+                transform: translateX(100%);
 
                 border-bottom: var(--sectionHeight) solid transparent;
-                border-left: 100px solid black;
+                border-left: var(--slashWidth) solid var(--slashLeftcolor);
             }
             .right {
                 position: absolute;
@@ -185,10 +345,10 @@ export default {
                 left: 0;
                 width: 0;
                 height: 0;
-                transform: translateX(-50%);
+                transform: translateX(0);
 
                 border-top: var(--sectionHeight) solid transparent;
-                border-right: 100px solid white;
+                border-right: var(--slashWidth) solid var(--slashRightColor);
             }
         }
     }
