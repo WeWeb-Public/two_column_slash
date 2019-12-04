@@ -307,16 +307,22 @@ export default {
         position: relative;
         height: 100%;
         width: 100%;
+        display: block;
+        @media (min-width: 992px) {
+            display: flex;
+        }
         .left2-column {
             width: 100%;
             @media (min-width: 992px) {
-                width: var(--rightColumnWidth);
+                width: initial;
+                flex-basis: var(--rightColumnWidth);
             }
         }
         .right2-column {
             width: 100%;
             @media (min-width: 992px) {
-                width: var(--rightColumnWidth);
+                width: initial;
+                flex-basis: var(--rightColumnWidth);
             }
         }
         .slash-container {
